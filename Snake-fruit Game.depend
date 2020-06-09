@@ -1,0 +1,10 @@
+# depslib dependency file v1.0
+1591690024 source:c:\users\hp\documents\snake-fruit game\main.cpp
+	<iostream>
+	<conio.h>
+	<windows.h>
+	<dos.h>
+	<time.h>
+	<fstream>
+	<string.h>
+

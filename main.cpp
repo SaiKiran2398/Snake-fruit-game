@@ -1,9 +1,9 @@
 #include<iostream>
 #include<conio.h>
 #include<windows.h>
-#include<dos.h>
 #include<time.h>
 #include<fstream>
+#include<sstream>
 #include<string.h>
 
 
@@ -19,8 +19,6 @@ eDirection dir;
 
 using namespace std;
 
-HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
-
 void gotoxy (int x, int y)
     {
          COORD coordinates;
@@ -35,14 +33,28 @@ class Sc
 	private:
 		string name;
 		int SCORE;
+		string scorecard;
 	public:
-		setName(string s)
+		void setName(string s)
 		{
 			name = s;
 		}
-		setScore(int s)
+		void setScore(int s)
 		{
 			SCORE = s;
+		}
+		void setScorecard()
+		{
+		    stringstream ss;
+		    ss<<SCORE;
+		    string score;
+		    ss>>score;
+
+		    scorecard = name + " - " + score;
+		}
+		string getScorecard()
+		{
+			return scorecard;
 		}
 		string getName()
 		{
@@ -52,27 +64,8 @@ class Sc
 		{
 			return SCORE;
 		}
-		friend ifstream & operator>>(ifstream &ifs,Sc &s);
-		friend ofstream & operator<<(ofstream &ofs,Sc &s);
-		friend ostream & operator<<(ostream &cout,Sc &s);
 };
 
-ostream & operator<<(ostream &cout,Sc &s)
-{
-	cout<<s.name<<"   -   "<<s.SCORE;
-}
-
-ofstream & operator<<(ofstream &ofs,Sc &s)
-{
-	ofs<<s.name<<endl<<s.SCORE<<endl;
-	return ofs;
-}
-
-ifstream & operator>>(ifstream &ifs,Sc &s)
-{
-	ifs>>s.name>>s.SCORE;
-	return ifs;
-}
 
 class Point
 {
@@ -148,6 +141,7 @@ class Snake
 		Snake()
 		{
 			size = 1;
+			dir = STOP;
 			cell[0] = new Point(width/2,height/2);
 			for(int i = 1;i<MAXSNAKESIZE;i++)
 			{
@@ -175,10 +169,6 @@ class Snake
 		void TurnRight()
 		{
 			cell[0]->MoveRight();
-		}
-		void copyPos(int i)
-		{
-			cell[i-1]->isEqual(cell[i]);
 		}
 		void Head(int x,int y)
 		{
@@ -263,7 +253,7 @@ class Snake
 		}
 };
 
-Layout()
+void Layout()
 {
 	system("cls");
 	bool print = false;
@@ -307,7 +297,7 @@ Layout()
 			{
 				if(j==12)
 				{
-					cout<<"3.High Scores";
+					cout<<"3.Our Scorers";
 				}
 				if(j>=12 && j<25)
 				{
@@ -459,7 +449,6 @@ void Logic(Snake &s)
 
 int Score()
 {
-	char ch;
 	system("cls");
 	for(int i=0;i<width+2;i++)
 	{
@@ -528,7 +517,6 @@ int Score()
 int main()
 {
 	srand((unsigned)time(NULL));
-	SetConsoleTextAttribute(console,240);;
 
 	int x;
 	char ch;
@@ -536,9 +524,9 @@ int main()
 	Sc sc;
 	label:
 	Snake snake;
+	snake.Randomfruit();
 	gameover = false;
 	score = 0;
-	dir = STOP;
 	Layout();
 	cin>>x;
 	if(x == 1)
@@ -555,20 +543,18 @@ int main()
 			cin>>ch;
 			if(ch == 'y')
 			{
-
+                string scorecard;
 				char *s = new char[20];
 				cout<<"Enter your Name : ";
 				cin>>s;
-				cout<<s;
 				sc.setName(s);
 				sc.setScore(score);
+				sc.setScorecard();
+				scorecard = sc.getScorecard();
+				cout<<scorecard;
 				ofstream ofs("Scores.txt",ios::app);
-				ofs<<sc;
+				ofs<<scorecard<<endl;
 				ofs.close();
-			}
-			else if(ch == 'n')
-			{
-
 			}
 			cout<<endl;
 			cout<<endl;
@@ -614,17 +600,19 @@ int main()
 				cout<<s;
 				sc.setName(s);
 				sc.setScore(score);
+				sc.setScorecard();
 				ofstream ofs("Scores.txt",ios::app);
-				ofs<<sc;
+				string scorecard = sc.getScorecard();
+				ofs<<scorecard<<endl;
 				ofs.close();
 			}
 				cout<<"Do you want to start again(Y/N)?";
 				cin>>c;
-				if(ch == 'y')
+				if(c == 'y')
 				{
 					goto label;
 				}
-				else if(ch == 'n')
+				else if(c == 'n')
 				{
 					gameover = true;
 				}
@@ -637,33 +625,31 @@ int main()
 	if(x == 3)
 	{
 		Draw(snake);
-		cout<<endl;
-		Sc s1,s2,s3,s4,s5;
+		cout<<endl<<endl;
+		cout<<"Our Scorers : ";
+        cout<<endl<<"--------------------------------------------------"<<endl;
+		string scorecard;
 		ifstream ifs("Scores.txt");
-		ifs>>s1;
-		cout<<s1;
-		cout<<endl<<"--------------------------------------------------"<<endl;
-		ifs>>s2;
-		cout<<s2;
-		cout<<endl<<"--------------------------------------------------"<<endl;
-		ifs>>s3;
-		cout<<s3;
-		cout<<endl<<"--------------------------------------------------"<<endl;
-		ifs>>s4;
-		cout<<s4;
-		cout<<endl<<"--------------------------------------------------"<<endl;
-		ifs>>s5;
-		cout<<s5;
+		int k = 1;
+		while(ifs)
+        {
+            getline(ifs,scorecard);
+            if(scorecard.empty())
+                break;
+            cout<<k++<<". "<<scorecard;
+            cout<<endl<<"--------------------------------------------------"<<endl;
+        }
 		ifs.close();
 		cout<<endl;
 		while(!(_kbhit()))
         {
-            gotoxy(0,height+12);
+            gotoxy(0,height+4+(2*k));
 		    cout<<"Press any key";
 		    Sleep(200);
-		    gotoxy(0,height+12);
+		    gotoxy(0,height+4+(2*k));
 		    cout<<"             ";
 		    Sleep(200);
+
         }
 		if(_getch())
 		{
